@@ -10,6 +10,8 @@ export interface Notice {
   uploadStatus?: 'pending' | 'success' | 'failed';
   uploadedAt?: string;
   url: string;
+  isDeleted: boolean;
+  deletedAt?: string;
 }
 
 export interface NoticeFilter {
@@ -18,6 +20,7 @@ export interface NoticeFilter {
   isProcessed?: boolean;
   isUploaded?: boolean;
   searchQuery?: string;
+  isDeleted?: boolean;
 }
 
 export interface NoticeResponse {

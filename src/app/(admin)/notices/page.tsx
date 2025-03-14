@@ -7,7 +7,7 @@ import { NoticeFilter } from '@/components/notices/NoticeFilter';
 import { Pagination } from '@/components/common/Pagination';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { getNotices, processNotice, uploadToSNS } from '@/lib/api/notice';
+import { getNotices, processNotice, uploadToSNS, moveToTrash } from '@/lib/api/notice';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,12 +27,20 @@ export default function NoticesPage() {
         searchQuery,
         isProcessed,
         isUploaded,
+        isDeleted: false,
       }),
   });
 
   const handleProcess = useCallback(async (selectedIds: string[]) => {
     try {
-      await Promise.all(selectedIds.map(processNotice));
+      if (selectedIds.length === 0) {
+        toast.error('처리할 공지사항을 선택해주세요.');
+        return;
+      }
+
+      for (const id of selectedIds) {
+        await processNotice(id);
+      }
       toast.success('선택한 공지사항이 처리되었습니다.');
       refetch();
     } catch (error) {
@@ -43,12 +51,39 @@ export default function NoticesPage() {
 
   const handleUpload = useCallback(async (selectedIds: string[]) => {
     try {
-      await Promise.all(selectedIds.map(uploadToSNS));
-      toast.success('선택한 공지사항이 SNS에 업로드되었습니다.');
+      if (selectedIds.length === 0) {
+        toast.error('업로드할 공지사항을 선택해주세요.');
+        return;
+      }
+
+      for (const id of selectedIds) {
+        await uploadToSNS(id);
+      }
+      toast.success('선택한 공지사항이 업로드되었습니다.');
       refetch();
     } catch (error) {
-      toast.error('SNS 업로드 중 오류가 발생했습니다.');
-      console.error('Failed to upload to SNS:', error);
+      toast.error('공지사항 업로드 중 오류가 발생했습니다.');
+      console.error('Failed to upload notices:', error);
+    }
+  }, [refetch]);
+
+  const handleDelete = useCallback(async (selectedIds: string[]) => {
+    try {
+      if (selectedIds.length === 0) {
+        toast.error('삭제할 공지사항을 선택해주세요.');
+        return;
+      }
+
+      if (!window.confirm('선택한 공지사항을 휴지통으로 이동하시겠습니까?')) {
+        return;
+      }
+
+      await moveToTrash(selectedIds);
+      toast.success('선택한 공지사항이 휴지통으로 이동되었습니다.');
+      refetch();
+    } catch (error) {
+      toast.error('공지사항 삭제 중 오류가 발생했습니다.');
+      console.error('Failed to move notices to trash:', error);
     }
   }, [refetch]);
 
@@ -93,6 +128,7 @@ export default function NoticesPage() {
                 notices={data?.notices ?? []}
                 onProcess={handleProcess}
                 onUpload={handleUpload}
+                onDelete={handleDelete}
               />
               {data && (
                 <Pagination

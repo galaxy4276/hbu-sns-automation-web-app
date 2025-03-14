@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 import {
   ColumnDef,
@@ -16,20 +18,17 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/lib/types/notice';
-import { format } from 'date-fns';
-import { NoticeDetail } from './NoticeDetail';
-import { Eye, Trash2 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { Trash2, RefreshCw } from 'lucide-react';
 
-interface NoticeListProps {
+interface TrashListProps {
   notices: Notice[];
-  onProcess: (selectedIds: string[]) => void;
-  onUpload: (selectedIds: string[]) => void;
+  onRestore: (selectedIds: string[]) => void;
   onDelete: (selectedIds: string[]) => void;
 }
 
-export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeListProps) {
+export function TrashList({ notices, onRestore, onDelete }: TrashListProps) {
   const [rowSelection, setRowSelection] = useState({});
-  const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
 
   const columns: ColumnDef<Notice>[] = [
     {
@@ -54,39 +53,34 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
       header: '제목',
     },
     {
-      accessorKey: 'createdAt',
-      header: '작성일',
-      cell: ({ row }) => format(new Date(row.original.createdAt), 'yyyy-MM-dd'),
+      accessorKey: 'deletedAt',
+      header: '삭제일',
+      cell: ({ row }) => {
+        const deletedAt = row.original.deletedAt;
+        if (!deletedAt) return '-';
+        try {
+          return format(parseISO(deletedAt), 'yyyy-MM-dd HH:mm');
+        } catch (error) {
+          console.error('날짜 형식 오류:', error);
+          return '-';
+        }
+      },
     },
     {
-      accessorKey: 'isProcessed',
-      header: '처리 상태',
-      cell: ({ row }) => (
-        <span className={row.original.isProcessed ? 'text-green-600' : 'text-yellow-600'}>
-          {row.original.isProcessed ? '처리 완료' : '미처리'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'isUploaded',
-      header: '업로드 상태',
-      cell: ({ row }) => (
-        <span className={row.original.isUploaded ? 'text-green-600' : 'text-gray-600'}>
-          {row.original.isUploaded ? '업로드 완료' : '미업로드'}
-        </span>
-      ),
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSelectedNotice(row.original)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      ),
+      accessorKey: 'daysUntilPermanentDelete',
+      header: '영구 삭제까지',
+      cell: ({ row }) => {
+        const deletedAt = row.original.deletedAt;
+        if (!deletedAt) return '-';
+        try {
+          const date = parseISO(deletedAt);
+          const daysLeft = 14 - Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+          return daysLeft > 0 ? `${daysLeft}일` : '오늘 삭제';
+        } catch (error) {
+          console.error('날짜 계산 오류:', error);
+          return '-';
+        }
+      },
     },
   ];
 
@@ -101,34 +95,22 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const handleProcess = useCallback(() => {
-    const selectedIds = Object.keys(rowSelection).map(
-      (index) => notices[parseInt(index)].id
-    );
-    onProcess(selectedIds);
-  }, [rowSelection, notices, onProcess]);
-
-  const handleUpload = useCallback(() => {
-    const selectedIds = Object.keys(rowSelection).map(
-      (index) => notices[parseInt(index)].id
-    );
-    onUpload(selectedIds);
-  }, [rowSelection, notices, onUpload]);
-
   const getSelectedIds = useCallback(() => {
-    const selectedIndices = Object.keys(rowSelection);
-    if (selectedIndices.length === 0) {
-      return [];
-    }
-    return selectedIndices.map(index => notices[parseInt(index)].id);
+    return Object.keys(rowSelection).map(
+      (index) => notices[parseInt(index)].id
+    );
   }, [rowSelection, notices]);
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
-        <Button onClick={handleProcess}>선택 항목 처리</Button>
-        <Button onClick={handleUpload} variant="secondary">
-          선택 항목 업로드
+        <Button
+          onClick={() => onRestore(getSelectedIds())}
+          variant="secondary"
+          className="gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          선택 항목 복구
         </Button>
         <Button
           onClick={() => onDelete(getSelectedIds())}
@@ -136,7 +118,7 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
           className="gap-2"
         >
           <Trash2 className="h-4 w-4" />
-          휴지통으로 이동
+          영구 삭제
         </Button>
       </div>
       <div className="rounded-md border">
@@ -180,20 +162,13 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  표시할 공지사항이 없습니다.
+                  휴지통이 비어있습니다.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      {selectedNotice && (
-        <NoticeDetail
-          notice={selectedNotice}
-          open={!!selectedNotice}
-          onOpenChange={(open) => !open && setSelectedNotice(null)}
-        />
-      )}
     </div>
   );
 } 
