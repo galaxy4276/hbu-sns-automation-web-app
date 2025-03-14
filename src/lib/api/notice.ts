@@ -30,29 +30,51 @@ export async function getNotices(filter: NoticeFilter): Promise<NoticeResponse> 
 }
 
 export async function processNotice(noticeId: string): Promise<Notice> {
-  const response = await fetch(`/api/notices/process/${noticeId}`, {
-    method: 'POST',
-  });
+  console.log('공지사항 처리 요청:', { noticeId });
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/process-notice/${noticeId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  const data = await response.json();
+    const data = await response.json();
+    console.log('공지사항 처리 응답:', data);
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to process notice');
+    if (!response.ok) {
+      throw new Error(data.error || '공지사항 처리에 실패했습니다.');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('공지사항 처리 중 에러 발생:', error);
+    throw new Error('공지사항 처리 중 오류가 발생했습니다.');
   }
-
-  return data;
 }
 
 export async function uploadToSNS(noticeId: string): Promise<Notice> {
-  const response = await fetch(`/api/notices/upload/${noticeId}`, {
-    method: 'POST',
-  });
+  console.log('SNS 업로드 요청:', { noticeId });
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-sns/${noticeId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  const data = await response.json();
+    const data = await response.json();
+    console.log('SNS 업로드 응답:', data);
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to upload to SNS');
+    if (!response.ok) {
+      throw new Error(data.error || 'SNS 업로드에 실패했습니다.');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('SNS 업로드 중 에러 발생:', error);
+    throw new Error('SNS 업로드 중 오류가 발생했습니다.');
   }
-
-  return data;
 } 
