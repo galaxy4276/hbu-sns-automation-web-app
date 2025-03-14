@@ -1,3 +1,5 @@
+"use client"
+
 import { useCallback, useState } from 'react';
 import {
   ColumnDef,
@@ -19,6 +21,8 @@ import { Notice } from '@/lib/types/notice';
 import { format } from 'date-fns';
 import { NoticeDetail } from './NoticeDetail';
 import { Eye, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { ImageViewerModal } from '@/components/ImageViewerModal';
 
 interface NoticeListProps {
   notices: Notice[];
@@ -28,8 +32,9 @@ interface NoticeListProps {
 }
 
 export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeListProps) {
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
   const columns: ColumnDef<Notice>[] = [
     {
@@ -47,6 +52,20 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="행 선택"
         />
+      ),
+    },
+    {
+      accessorKey: 'imageUrl',
+      header: '이미지',
+      cell: ({ row }) => (
+        <div className="relative h-16 w-16 cursor-pointer" onClick={() => setSelectedImageUrl(row.original.imageUrl)}>
+          <Image
+            src={row.original.imageUrl}
+            alt={row.original.title}
+            fill
+            className="object-cover rounded"
+          />
+        </div>
       ),
     },
     {
@@ -123,6 +142,25 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
     return selectedIndices.map(index => notices[parseInt(index)].id);
   }, [rowSelection, notices]);
 
+  const handleSelectAll = () => {
+    if (Object.keys(rowSelection).length === notices.length) {
+      setRowSelection({});
+    } else {
+      const newSelection = notices.map((notice) => notice.id);
+      setRowSelection({ ...newSelection.reduce((acc, id) => ({ ...acc, [id]: true }), {}) });
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    if (rowSelection[id]) {
+      const newSelection = { ...rowSelection };
+      delete newSelection[id];
+      setRowSelection(newSelection);
+    } else {
+      setRowSelection({ ...rowSelection, [id]: true });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -194,6 +232,11 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
           onOpenChange={(open) => !open && setSelectedNotice(null)}
         />
       )}
+      <ImageViewerModal
+        isOpen={!!selectedImageUrl}
+        onClose={() => setSelectedImageUrl(null)}
+        imageUrl={selectedImageUrl ?? ''}
+      />
     </div>
   );
 } 
