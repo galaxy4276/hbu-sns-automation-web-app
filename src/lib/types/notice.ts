@@ -2,14 +2,10 @@ export interface Notice {
   id: string;
   title: string;
   content: string;
-  summary?: string;
+  imageUrl: string;
   createdAt: string;
   updatedAt: string;
-  isProcessed: boolean;
-  isUploaded: boolean;
-  uploadStatus?: 'pending' | 'success' | 'failed';
-  uploadedAt?: string;
-  url: string;
+  uploaded: boolean;
 }
 
 export interface NoticeFilter {
