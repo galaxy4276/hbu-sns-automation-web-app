@@ -14,7 +14,6 @@ export interface NoticeFilter {
   isProcessed?: boolean;
   isUploaded?: boolean;
   searchQuery?: string;
-  isDeleted?: boolean;
 }
 
 export interface NoticeResponse {

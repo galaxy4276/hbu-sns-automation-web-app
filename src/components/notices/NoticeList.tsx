@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Notice } from '@/lib/types/notice';
 import { format } from 'date-fns';
 import { NoticeDetail } from './NoticeDetail';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import Image from 'next/image';
 import { ImageViewerModal } from '@/components/ImageViewerModal';
 
@@ -28,11 +28,10 @@ interface NoticeListProps {
   notices: Notice[];
   onProcess: (selectedIds: string[]) => void;
   onUpload: (selectedIds: string[]) => void;
-  onDelete: (selectedIds: string[]) => void;
 }
 
-export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeListProps) {
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+export function NoticeList({ notices, onProcess, onUpload }: NoticeListProps) {
+  const [rowSelection, setRowSelection] = useState({});
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
@@ -134,14 +133,6 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
     onUpload(selectedIds);
   }, [rowSelection, notices, onUpload]);
 
-  const getSelectedIds = useCallback(() => {
-    const selectedIndices = Object.keys(rowSelection);
-    if (selectedIndices.length === 0) {
-      return [];
-    }
-    return selectedIndices.map(index => notices[parseInt(index)].id);
-  }, [rowSelection, notices]);
-
   const handleSelectAll = () => {
     if (Object.keys(rowSelection).length === notices.length) {
       setRowSelection({});
@@ -167,14 +158,6 @@ export function NoticeList({ notices, onProcess, onUpload, onDelete }: NoticeLis
         <Button onClick={handleProcess}>선택 항목 처리</Button>
         <Button onClick={handleUpload} variant="secondary">
           선택 항목 업로드
-        </Button>
-        <Button
-          onClick={() => onDelete(getSelectedIds())}
-          variant="destructive"
-          className="gap-2"
-        >
-          <Trash2 className="h-4 w-4" />
-          휴지통으로 이동
         </Button>
       </div>
       <div className="rounded-md border">

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Bell, FileText, Trash2 } from 'lucide-react';
+import { Bell, FileText } from 'lucide-react';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -18,11 +18,6 @@ export function Navigation() {
       href: '/uploads',
       label: '업로드 내역',
       icon: Bell,
-    },
-    {
-      href: '/trash',
-      label: '휴지통',
-      icon: Trash2,
     },
   ];
 
