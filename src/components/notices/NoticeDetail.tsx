@@ -34,11 +34,17 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
       console.log('API 호출 시작:', notice.id);
       const response = await generateSNSText(notice.id);
       console.log('API 응답:', response);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
       setGeneratedText(response.text);
       toast.success('SNS 텍스트가 생성되었습니다.');
     } catch (error) {
       console.error('API 에러 상세:', error);
-      toast.error('텍스트 생성 중 오류가 발생했습니다.');
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      toast.error(`텍스트 생성 실패: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }

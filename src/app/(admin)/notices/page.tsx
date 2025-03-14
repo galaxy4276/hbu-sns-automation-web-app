@@ -96,7 +96,7 @@ export default function NoticesPage() {
               />
               {data && (
                 <Pagination
-                  currentPage={data.currentPage}
+                  currentPage={data.page}
                   totalPages={data.totalPages}
                   onPageChange={setPage}
                 />

@@ -12,17 +12,17 @@ export interface Notice {
   url: string;
 }
 
-export interface NoticeResponse {
-  notices: Notice[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-}
-
 export interface NoticeFilter {
   page: number;
   limit: number;
   isProcessed?: boolean;
   isUploaded?: boolean;
   searchQuery?: string;
+}
+
+export interface NoticeResponse {
+  notices: Notice[];
+  total: number;
+  page: number;
+  totalPages: number;
 } 

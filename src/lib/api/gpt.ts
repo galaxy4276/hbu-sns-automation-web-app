@@ -1,5 +1,7 @@
 interface GenerateTextResponse {
-  text: string;
+  text?: string;
+  error?: string;
+  details?: string;
 }
 
 export async function generateSNSText(noticeId: string): Promise<GenerateTextResponse> {
@@ -11,9 +13,11 @@ export async function generateSNSText(noticeId: string): Promise<GenerateTextRes
     body: JSON.stringify({ noticeId }),
   });
 
+  const data = await response.json();
+  
   if (!response.ok) {
-    throw new Error('Failed to generate SNS text');
+    throw new Error(data.error || 'Failed to generate SNS text');
   }
 
-  return response.json();
+  return data;
 } 
