@@ -1,3 +1,6 @@
+# Dev Guide
+please write commit message in korean and keep simple and concise.
+
 # Application Guide
 I will create an application that automatically retrieves posts, checks them on the admin dashboard, processes them through the API, and uploads them to SNS.
 Please refer to the API and example.json below for development.
