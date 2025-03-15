@@ -262,7 +262,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
               value={generatedText}
               onChange={(e) => setGeneratedText(e.target.value)}
               placeholder="SNS에 게시할 텍스트를 생성하거나 직접 입력하세요."
-              className="min-h-[200px]"
+              className="min-h-[600px] py-6 px-2"
             />
             
             {/* 숨겨진 캔버스 */}
