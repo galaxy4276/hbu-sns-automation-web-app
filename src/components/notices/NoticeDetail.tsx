@@ -49,6 +49,45 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     }
   };
 
+  // 텍스트 전처리 함수 추가
+  const preprocessText = (text: string, maxCharsPerLine: number = 30): string[] => {
+    const rawLines = text.replaceAll('*', '').split('\n');
+    const processedLines: string[] = [];
+    
+    rawLines.forEach(line => {
+      if (line.trim() === '') {
+        processedLines.push(line);
+        return;
+      }
+
+      const words = line.split(' ');
+      let currentLine = '';
+
+      words.forEach(word => {
+        // 현재 줄 + 새 단어의 길이가 maxCharsPerLine을 초과하는지 확인
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        
+        if (testLine.replace(/\(#[a-zA-Z0-9]{5,7}\)/g, '').length <= maxCharsPerLine) {
+          // 현재 줄에 단어 추가
+          currentLine = testLine;
+        } else {
+          // 현재 줄이 있으면 추가하고 새 줄 시작
+          if (currentLine) {
+            processedLines.push(currentLine);
+          }
+          currentLine = word;
+        }
+      });
+
+      // 마지막 줄 추가
+      if (currentLine) {
+        processedLines.push(currentLine);
+      }
+    });
+
+    return processedLines;
+  };
+
   const generateStoryImage = () => {
     if (!canvasRef.current || !generatedText) return;
 
@@ -64,18 +103,56 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 텍스트 스타일 설정
-    ctx.fillStyle = 'black';
-    ctx.font = '40px Recipekorea'; // Pretendard 폰트 사용
+    // 기본 텍스트 스타일 설정
+    ctx.font = '40px Recipekorea';
     ctx.textAlign = 'center';
     
-    // 텍스트 줄바꿈 처리 및 그리기
-    const lines = generatedText.split('\n');
+    // 텍스트 전처리
+    const lines = preprocessText(generatedText);
     const lineHeight = 60;
     const startY = (canvas.height - (lines.length * lineHeight)) / 2;
 
-    lines.forEach((line, index) => {
-      ctx.fillText(line, canvas.width / 2, startY + (index * lineHeight));
+    // 각 줄 처리
+    lines.forEach((line: string, index: number) => {
+      const words = line.split(' ');
+      let currentX = canvas.width / 2;
+
+      // 전체 라인의 너비 계산 (컬러 태그 제외)
+      const cleanLine = words.map(word => word.replace(/\(#[A-Fa-f0-9]{6}\)/, '')).join(' ');
+      const lineWidth = ctx.measureText(cleanLine).width;
+      let xOffset = -lineWidth / 2;
+
+      words.forEach((word) => {
+        // 색상 코드 매칭 패턴 수정 (5-7자리 허용)
+        const colorMatch = word.match(/\(#[a-zA-Z0-9]{5,7}\)/);
+        const cleanWord = word.replace(/\(#[a-zA-Z0-9]{5,7}\)/, '');
+        
+        // 단어 너비 계산 (컬러 태그 제외)
+        const wordWidth = ctx.measureText(cleanWord).width;
+        const spaceWidth = ctx.measureText(' ').width;
+
+        // 색상 코드 처리 개선
+        let color = 'black';
+        if (colorMatch) {
+          const colorCode = colorMatch[0].replace('(', '').replace(')', '');
+          // 색상 코드 정규화 (6자리로 만들기)
+          if (colorCode.length === 7) {
+            color = colorCode.slice(0, 7); // 7자리면 그대로 사용
+          } else if (colorCode.length === 5) {
+            color = `${colorCode}${colorCode.slice(-1)}`; // 5자리면 마지막 숫자 반복
+          } else {
+            color = colorCode; // 6자리는 그대로 사용
+          }
+        }
+        console.log({ color, colorMatch, cleanWord, wordWidth, spaceWidth });
+
+        // 색상 적용
+        ctx.fillStyle = color;
+        ctx.fillText(cleanWord, currentX + xOffset + (wordWidth / 2), startY + (index * lineHeight));
+
+        // 다음 단어의 위치로 이동
+        xOffset += wordWidth + spaceWidth;
+      });
     });
 
     // 캔버스를 이미지로 변환
