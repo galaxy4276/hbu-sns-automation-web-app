@@ -102,9 +102,8 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     // 배경 설정
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     // 기본 텍스트 스타일 설정
-    ctx.font = '40px Recipekorea';
+    ctx.font = 'bold 40px Recipekorea';
     ctx.textAlign = 'center';
     
     // 텍스트 전처리
@@ -144,7 +143,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
             color = colorCode; // 6자리는 그대로 사용
           }
         }
-        console.log({ color, colorMatch, cleanWord, wordWidth, spaceWidth });
+        // console.log({ color, colorMatch, cleanWord, wordWidth, spaceWidth });
 
         // 색상 적용
         ctx.fillStyle = color;
