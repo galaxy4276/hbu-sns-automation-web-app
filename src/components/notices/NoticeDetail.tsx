@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState, useRef, useEffect } from 'react';
 import { generateSNSText } from '@/lib/api/gpt';
 import { toast } from 'sonner';
-import { Loader2, Wand2, ImageIcon, Download } from 'lucide-react';
+import { Loader2, Wand2, ImageIcon, Download, Copy, Check } from 'lucide-react';
 import Image from 'next/image';
 
 interface NoticeDetailProps {
@@ -28,6 +28,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
   const [isGenerating, setIsGenerating] = useState(false);
   const [storyImage, setStoryImage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [copied, setCopied] = useState(false);
 
   console.log('현재 공지사항:', notice);
 
@@ -159,6 +160,18 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     setStoryImage(imageUrl);
   };
 
+  // 링크 복사 함수 추가
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(notice.originUrl);
+      setCopied(true);
+      toast.success('링크가 복사되었습니다.');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('링크 복사에 실패했습니다.');
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
@@ -174,7 +187,36 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
             </Badge>
           </div>
         </DialogHeader>
+        
         <div className="space-y-4">
+          {/* 원본 링크 섹션 추가 */}
+          <div className="rounded-lg border p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">원본 링크</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyLink}
+                className="gap-2"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                {copied ? '복사됨' : '복사'}
+              </Button>
+            </div>
+            <a
+              href={notice.originUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline mt-2 block truncate"
+            >
+              {'원본 공지사항 가기' || '링크를 찾지 못함'}
+            </a>
+          </div>
+
           {notice.summary && (
             <div className="rounded-lg bg-muted p-4">
               <h3 className="mb-2 font-semibold">요약</h3>

@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Notice } from '@/lib/types/notice';
 import { format } from 'date-fns';
 import { NoticeDetail } from './NoticeDetail';
-import { Eye } from 'lucide-react';
+import { Eye, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import { ImageViewerModal } from '@/components/ImageViewerModal';
 
@@ -86,7 +86,7 @@ export function NoticeList({ notices, onProcess, onUpload }: NoticeListProps) {
       ),
     },
     {
-      accessorKey: 'isUploaded',
+      accessorKey: 'isUploaded',  
       header: '업로드 상태',
       cell: ({ row }) => (
         <span className={row.original.isUploaded ? 'text-green-600' : 'text-gray-600'}>
@@ -97,13 +97,22 @@ export function NoticeList({ notices, onProcess, onUpload }: NoticeListProps) {
     {
       id: 'actions',
       cell: ({ row }) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSelectedNotice(row.original)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSelectedNotice(row.original)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.open(row.original.originUrl, '_blank')}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
       ),
     },
   ];

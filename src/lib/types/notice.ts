@@ -3,6 +3,7 @@ export interface Notice {
   title: string;
   content: string;
   imageUrl: string;
+  originUrl: string;
   createdAt: string;
   updatedAt: string;
   uploaded: boolean;
