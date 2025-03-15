@@ -4,20 +4,26 @@ interface GenerateTextResponse {
   details?: string;
 }
 
-export async function generateSNSText(noticeId: string): Promise<GenerateTextResponse> {
-  const response = await fetch('/api/sns-text', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ noticeId }),
-  });
+export async function generateSNSText(message: string): Promise<string> {
+  try {
+    const response = await fetch('https://4hdcocafy4.execute-api.ap-northeast-2.amazonaws.com/default/sns-text-generator', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message })
+    });
 
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to generate SNS text');
+    if (!response.ok) {
+      throw new Error('Failed to generate SNS text');
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    console.error('Error generating SNS text:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
   }
-
-  return data;
 } 

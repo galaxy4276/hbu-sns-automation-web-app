@@ -32,14 +32,10 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     try {
       setIsGenerating(true);
       console.log('API 호출 시작:', notice.id);
-      const response = await generateSNSText(notice.id);
-      console.log('API 응답:', response);
+      const generatedText = await generateSNSText(notice.content);
+      console.log('API 응답:', generatedText);
       
-      if (response.error) {
-        throw new Error(response.error);
-      }
-      
-      setGeneratedText(response.text);
+      setGeneratedText(generatedText);
       toast.success('SNS 텍스트가 생성되었습니다.');
     } catch (error) {
       console.error('API 에러 상세:', error);
