@@ -77,20 +77,11 @@ export function NoticeList({ notices, onProcess, onUpload }: NoticeListProps) {
       cell: ({ row }) => format(new Date(row.original.createdAt), 'yyyy-MM-dd'),
     },
     {
-      accessorKey: 'isProcessed',
-      header: '처리 상태',
-      cell: ({ row }) => (
-        <span className={row.original.isProcessed ? 'text-green-600' : 'text-yellow-600'}>
-          {row.original.isProcessed ? '처리 완료' : '미처리'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'isUploaded',  
+      accessorKey: 'uploaded',  
       header: '업로드 상태',
       cell: ({ row }) => (
-        <span className={row.original.isUploaded ? 'text-green-600' : 'text-gray-600'}>
-          {row.original.isUploaded ? '업로드 완료' : '미업로드'}
+        <span className={row.original.uploaded ? 'text-green-600' : 'text-gray-600'}>
+          {row.original.uploaded ? '업로드 완료' : '미업로드'}
         </span>
       ),
     },

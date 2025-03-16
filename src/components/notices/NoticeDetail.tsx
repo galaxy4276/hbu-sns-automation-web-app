@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 import { Loader2, Wand2, ImageIcon, Download, Copy, Check, Share } from 'lucide-react';
 import Image from 'next/image';
 import { publishToSNS } from '@/lib/api/sns';
+import { updateArticleStatus } from '@/lib/api/article';
+import { useRouter } from 'next/navigation';
 
 interface NoticeDetailProps {
   notice: Notice;
@@ -31,6 +33,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copied, setCopied] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const router = useRouter();
 
   console.log('현재 공지사항:', notice);
 
@@ -174,14 +177,24 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     }
   };
 
-  // SNS 배포 함수 추가
+  // SNS 배포 함수 수정
   const handlePublishToSNS = async () => {
     if (!storyImage) return;
     
     try {
       setIsPublishing(true);
+      // 인스타그램 배포
       await publishToSNS(storyImage, notice.originUrl);
+      
+      // 게시물 상태 업데이트
+      await updateArticleStatus(notice.id);
+      
+      // 성공 메시지
       toast.success('인스타그램에 성공적으로 배포되었습니다!');
+      
+      // 목록 새로고침
+      router.refresh();
+      
     } catch (error) {
       console.error('SNS 배포 오류:', error);
       toast.error('인스타그램 배포 중 오류가 발생했습니다.');
@@ -197,11 +210,8 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
           <DialogTitle>{notice.title}</DialogTitle>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>작성일: {format(new Date(notice.createdAt), 'yyyy-MM-dd')}</span>
-            <Badge variant={notice.isProcessed ? 'default' : 'secondary'}>
-              {notice.isProcessed ? '처리 완료' : '미처리'}
-            </Badge>
-            <Badge variant={notice.isUploaded ? 'default' : 'secondary'}>
-              {notice.isUploaded ? '업로드 완료' : '미업로드'}
+            <Badge variant={notice.uploaded ? 'default' : 'secondary'}>
+              {notice.uploaded ? '업로드 완료' : '미업로드'}
             </Badge>
           </div>
         </DialogHeader>
