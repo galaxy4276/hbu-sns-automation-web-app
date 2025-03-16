@@ -14,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState, useRef, useEffect } from 'react';
 import { generateSNSText } from '@/lib/api/gpt';
 import { toast } from 'sonner';
-import { Loader2, Wand2, ImageIcon, Download, Copy, Check } from 'lucide-react';
+import { Loader2, Wand2, ImageIcon, Download, Copy, Check, Share } from 'lucide-react';
 import Image from 'next/image';
+import { publishToSNS } from '@/lib/api/sns';
 
 interface NoticeDetailProps {
   notice: Notice;
@@ -29,6 +30,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
   const [storyImage, setStoryImage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [copied, setCopied] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   console.log('현재 공지사항:', notice);
 
@@ -172,6 +174,22 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     }
   };
 
+  // SNS 배포 함수 추가
+  const handlePublishToSNS = async () => {
+    if (!storyImage) return;
+    
+    try {
+      setIsPublishing(true);
+      await publishToSNS(storyImage, notice.originUrl);
+      toast.success('인스타그램에 성공적으로 배포되었습니다!');
+    } catch (error) {
+      console.error('SNS 배포 오류:', error);
+      toast.error('인스타그램 배포 중 오류가 발생했습니다.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
@@ -273,31 +291,48 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
 
             {/* 생성된 이미지 미리보기 */}
             {storyImage && (
-              <div className="space-y-2">
-                <h3 className="font-semibold">생성된 스토리 이미지</h3>
-                <div className="relative w-full max-w-md mx-auto border rounded-lg overflow-hidden">
-                  <Image
-                    src={storyImage}
-                    alt="생성된 스토리 이미지"
-                    width={1080}
-                    height={1350}
-                    className="w-full h-auto"
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = storyImage;
-                      link.download = 'story-image.png';
-                      link.click();
-                    }}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    이미지 다운로드
-                  </Button>
+              <div className="space-y-4">
+                <div className="rounded-lg border p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">생성된 스토리 이미지</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = storyImage;
+                          link.download = 'story-image.png';
+                          link.click();
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        이미지 다운로드
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handlePublishToSNS}
+                        disabled={isPublishing}
+                      >
+                        {isPublishing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Share className="mr-2 h-4 w-4" />
+                        )}
+                        {isPublishing ? '배포 중...' : '인스타그램에 배포하기'}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="relative w-full max-w-md mx-auto border rounded-lg overflow-hidden">
+                    <Image
+                      src={storyImage}
+                      alt="생성된 스토리 이미지"
+                      width={1080}
+                      height={1350}
+                      className="w-full h-auto"
+                    />
+                  </div>
                 </div>
               </div>
             )}

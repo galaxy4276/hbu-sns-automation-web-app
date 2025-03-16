@@ -18,7 +18,7 @@ export async function getNotices(filter: NoticeFilter): Promise<NoticeResponse> 
     console.log('공지사항 조회 응답:', data);
 
     return {
-      notices: data.articles,
+      notices: JSON.parse(data.body).articles,
       total: data?.total || 0,
       page: data?.page || 1,
       totalPages: data?.totalPages || 1,
