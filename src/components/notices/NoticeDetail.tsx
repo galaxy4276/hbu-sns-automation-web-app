@@ -26,6 +26,8 @@ interface NoticeDetailProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const ENDPIX = '링크를 클릭하려면 스마트 폰 화면 중앙을 클릭해주세요!'
+
 export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) {
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -56,7 +58,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
   };
 
   // 텍스트 전처리 함수 추가
-  const preprocessText = (text: string, maxCharsPerLine: number = 30): string[] => {
+  const preprocessText = (text: string, maxCharsPerLine: number = 27): string[] => {
     const rawLines = text.replaceAll('*', '').split('\n');
     const processedLines: string[] = [];
     
@@ -109,7 +111,7 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // 기본 텍스트 스타일 설정
-    ctx.font = 'bold 40px Recipekorea';
+    ctx.font = 'bold 38px Recipekorea';
     ctx.textAlign = 'center';
     
     // 텍스트 전처리
@@ -159,6 +161,12 @@ export function NoticeDetail({ notice, open, onOpenChange }: NoticeDetailProps) 
         xOffset += wordWidth + spaceWidth;
       });
     });
+
+    // 종료 텍스트 추가
+    ctx.fillStyle = 'black';
+    ctx.font = 'bold 24px Recipekorea';
+    ctx.textAlign = 'center';
+    ctx.fillText(ENDPIX, canvas.width / 2, canvas.height - 50);
 
     // 캔버스를 이미지로 변환
     const imageUrl = canvas.toDataURL('image/png');
